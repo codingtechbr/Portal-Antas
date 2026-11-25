@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Painel — Portal Antas Bahia</title>
+<link rel="icon" href="img/favicon.png">
+<style>
+  :root { --azul:#0a2545; --azul2:#13386b; --verm:#d62839; --fundo:#f3f5f9; --card:#fff; --texto:#14213d; --suave:#66708a; --borda:#e2e6ef; --ok:#0f7a4a; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; background:var(--fundo); color:var(--texto); font-size:15px; }
+  button, input, select, textarea { font:inherit; }
+  .esc { display:none !important; }
+  a { color:var(--azul2); }
+
+  /* Login */
+  .login { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;
+    background:radial-gradient(circle at 100% 0%, #1d4f91 0, transparent 50%), var(--azul); }
+  .login-box { width:100%; max-width:380px; background:var(--card); border-radius:20px; padding:28px 24px; box-shadow:0 20px 50px rgba(0,0,0,.3); }
+  .login-box .marca { background:var(--azul); border-radius:14px; padding:14px; text-align:center; margin-bottom:20px; }
+  .login-box .marca img { height:40px; }
+  .login-box h1 { font-size:20px; margin:0 0 4px; }
+  .login-box p.sub { margin:0 0 18px; color:var(--suave); font-size:14px; }
+
+  .campo { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+  .campo label { font-weight:700; font-size:13.5px; }
+  .campo small { color:var(--suave); font-size:12.5px; }
+  input[type=text], input[type=email], input[type=password], input[type=url], select, textarea {
+    width:100%; padding:12px 13px; border:1.5px solid var(--borda); border-radius:12px; background:#fff; color:var(--texto); }
+  input:focus, select:focus, textarea:focus { outline:none; border-color:var(--azul2); box-shadow:0 0 0 3px rgba(19,56,107,.12); }
+  textarea { min-height:220px; resize:vertical; line-height:1.5; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 18px; border-radius:12px; border:0; cursor:pointer; font-weight:700; background:var(--azul); color:#fff; }
+  .btn:disabled { opacity:.6; cursor:wait; }
+  .btn.cheio { width:100%; }
+  .btn.claro { background:#e9eef7; color:var(--azul); }
+  .btn.perigo { background:#fde8ea; color:var(--verm); }
+  .link-btn { background:none; border:0; color:var(--azul2); cursor:pointer; padding:0; font-weight:600; text-decoration:underline; }
+  .msg { padding:10px 12px; border-radius:10px; font-size:14px; margin-bottom:14px; }
+  .msg.erro { background:#fde8ea; color:#9b1c2a; }
+  .msg.ok { background:#e3f5ec; color:#0b5c37; }
+
+  /* Painel */
+  header.topo { background:var(--azul); color:#fff; position:sticky; top:0; z-index:5; }
+  header.topo .in { max-width:900px; margin:0 auto; padding:10px 16px; display:flex; align-items:center; gap:12px; }
+  header.topo img { height:30px; }
+  header.topo .quem { margin-left:auto; text-align:right; font-size:12.5px; line-height:1.3; opacity:.9; }
+  header.topo .sair { background:#ffffff1f; color:#fff; border:0; border-radius:10px; padding:8px 12px; cursor:pointer; font-weight:700; }
+  nav.abas { background:#fff; border-bottom:1px solid var(--borda); position:sticky; top:50px; z-index:4; }
+  nav.abas .in { max-width:900px; margin:0 auto; padding:8px 12px; display:flex; gap:8px; overflow-x:auto; }
+  nav.abas button { border:1px solid var(--borda); background:#fff; border-radius:999px; padding:8px 16px; font-weight:700; color:var(--texto); cursor:pointer; white-space:nowrap; }
+  nav.abas button.ativo { background:var(--azul); border-color:var(--azul); color:#fff; }
+  main { max-width:900px; margin:0 auto; padding:18px 16px 60px; }
+  .cartao { background:var(--card); border-radius:16px; padding:18px; box-shadow:0 1px 2px rgba(0,0,0,.04), 0 6px 18px rgba(10,37,69,.06); }
+  h2.tit { font-size:20px; margin:0 0 14px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+
+  /* Lista */
+  .busca { margin-bottom:12px; }
+  .lista { display:flex; flex-direction:column; gap:10px; }
+  .item { display:grid; grid-template-columns:84px 1fr; gap:12px; background:var(--card); border-radius:14px; padding:10px; box-shadow:0 1px 2px rgba(0,0,0,.04), 0 4px 12px rgba(10,37,69,.05); }
+  .item img, .item .semfoto { width:84px; height:64px; border-radius:10px; object-fit:cover; background:linear-gradient(135deg,var(--azul2),var(--azul)); }
+  .item .cat { font-size:11.5px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; }
+  .item h3 { margin:2px 0 4px; font-size:15px; line-height:1.3; }
+  .item .meta { font-size:12.5px; color:var(--suave); }
+  .item .acoes { display:flex; gap:14px; margin-top:6px; font-size:13.5px; }
+  .vazio { text-align:center; color:var(--suave); padding:40px 10px; }
+
+  /* Formulário */
+  .grade2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .foto { border:2px dashed var(--borda); border-radius:14px; padding:14px; text-align:center; cursor:pointer; background:#fafbfd; }
+  .foto img { max-width:100%; max-height:240px; border-radius:10px; display:block; margin:0 auto 8px; }
+  .foto span { color:var(--suave); font-size:14px; }
+  .barra-acoes { display:flex; gap:10px; flex-wrap:wrap; margin-top:6px; }
+  .dica { background:#f1f5fb; border-radius:12px; padding:10px 12px; font-size:13px; color:var(--suave); margin-bottom:14px; }
+
+  /* Equipe */
+  .pessoa { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--borda); }
+  .pessoa:last-child { border-bottom:0; }
+  .pessoa .av { width:40px; height:40px; border-radius:50%; background:var(--azul2); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; flex-shrink:0; }
+  .pessoa .nm { flex:1; min-width:0; }
+  .pessoa .nm b { display:block; }
+  .pessoa .nm span { font-size:13px; color:var(--suave); word-break:break-all; }
+  .selo { font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px; background:#e9eef7; color:var(--azul); }
+
+  .toast { position:fixed; left:50%; bottom:20px; transform:translateX(-50%); background:#14213d; color:#fff; padding:12px 18px; border-radius:12px; font-weight:600; z-index:50; box-shadow:0 10px 30px rgba(0,0,0,.25); max-width:90vw; }
+  @media (max-width:600px) { .grade2 { grid-template-columns:1fr; } header.topo .quem span { display:none; } }
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<section class="login" id="tela-login">
+  <form class="login-box" id="form-login">
+    <div class="marca"><img src="img/logo-horizontal.png" alt="Portal Antas Bahia"></div>
+    <h1>Painel do Portal</h1>
+    <p class="sub">Área da redação — publique e edite as notícias.</p>
+    <div id="login-msg"></div>
+    <div class="campo"><label for="l-email">E-mail</label><input type="email" id="l-email" autocomplete="username" required></div>
+    <div class="campo"><label for="l-senha">Senha</label><input type="password" id="l-senha" autocomplete="current-password" required></div>
+    <button class="btn cheio" id="btn-entrar">Entrar</button>
+    <p style="text-align:center;margin:14px 0 0;font-size:14px"><button type="button" class="link-btn" id="btn-esqueci">Esqueci minha senha</button></p>
+  </form>
+</section>
+
+<!-- ============ PAINEL ============ -->
+<div id="tela-painel" class="esc">
+  <header class="topo"><div class="in">
+    <a href="index.html" title="Ver o portal"><img src="img/logo-horizontal.png" alt="Portal Antas Bahia"></a>
+    <div class="quem"><b id="quem-nome"></b><br><span id="quem-papel"></span></div>
+    <button class="sair" id="btn-sair">Sair</button>
+  </div></header>
+  <nav class="abas"><div class="in">
+    <button data-aba="lista" class="ativo">Notícias</button>
+    <button data-aba="editor">+ Nova notícia</button>
+    <button data-aba="equipe" id="aba-equipe" class="esc">Equipe</button>
+    <a class="btn claro" href="index.html" target="_blank" style="padding:8px 14px;border-radius:999px;white-space:nowrap">Ver portal ↗</a>
+  </div></nav>
+
+  <main>
+    <!-- Lista -->
+    <section id="aba-lista">
+      <h2 class="tit">Notícias publicadas <small id="total" style="font-size:13px;color:var(--suave);font-weight:600"></small></h2>
+      <input type="text" class="busca" id="busca" placeholder="Buscar pelo título…">
+      <div class="lista" id="lista"><div class="vazio">Carregando…</div></div>
+    </section>
+
+    <!-- Editor -->
+    <section id="aba-editor" class="esc">
+      <form class="cartao" id="form-noticia">
+        <h2 class="tit"><span id="editor-titulo">Nova notícia</span></h2>
+        <div id="editor-msg"></div>
+        <input type="hidden" id="n-id">
+        <div class="campo"><label for="n-titulo">Título *</label><input type="text" id="n-titulo" maxlength="160" required placeholder="Ex.: Câmara de Antas aprova orçamento de 2027"></div>
+        <div class="grade2">
+          <div class="campo"><label for="n-categoria">Editoria *</label><select id="n-categoria"></select></div>
+          <div class="campo"><label for="n-autor">Autor</label><input type="text" id="n-autor" placeholder="Ex.: Redação"></div>
+        </div>
+        <div class="campo">
+          <label>Foto de capa</label>
+          <div class="foto" id="foto-area"><img id="foto-prev" class="esc" alt=""><span id="foto-txt">📷 Toque para escolher uma foto</span></div>
+          <input type="file" id="n-foto" accept="image/*" class="esc">
+          <small>Ou cole o link de uma imagem: <input type="url" id="n-foto-url" placeholder="https://…" style="margin-top:6px"></small>
+        </div>
+        <div class="campo">
+          <label for="n-texto">Texto *</label>
+          <div class="dica">O <b>primeiro parágrafo</b> vira o resumo da notícia. Separe os parágrafos com uma linha em branco.</div>
+          <textarea id="n-texto" required></textarea>
+        </div>
+        <div class="campo"><label for="n-link">Fonte / link original (opcional)</label><input type="url" id="n-link" placeholder="https://… (post do Instagram, site da Câmara…)"></div>
+        <div class="barra-acoes">
+          <button class="btn" id="btn-publicar">Publicar</button>
+          <button type="button" class="btn claro" id="btn-cancelar">Cancelar</button>
+          <button type="button" class="btn perigo esc" id="btn-excluir" style="margin-left:auto">Excluir</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Equipe (só o dono) -->
+    <section id="aba-equipe-sec" class="esc">
+      <div class="cartao" style="margin-bottom:14px">
+        <h2 class="tit">Adicionar editor</h2>
+        <div class="dica">A pessoa precisa ter uma conta no <b>Achei Fácil</b> (botão “Entrar / Criar conta” no site). Depois, digite o e-mail dela aqui.</div>
+        <div id="equipe-msg"></div>
+        <form id="form-equipe" style="display:flex;gap:10px;flex-wrap:wrap">
+          <input type="email" id="e-email" placeholder="e-mail do editor" required style="flex:1;min-width:200px">
+          <button class="btn">Adicionar</button>
+        </form>
+      </div>
+      <div class="cartao">
+        <h2 class="tit">Quem pode publicar</h2>
+        <div id="equipe-lista"><div class="vazio">Carregando…</div></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="js/dados.js?v=2"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, setDoc, query, where, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyDbMlnT8pO0_JECJsGrQn2CNfcsKA6uyGQ",
+  authDomain: "cidade-9528a.firebaseapp.com",
+  projectId: "cidade-9528a",
+  storageBucket: "cidade-9528a.firebasestorage.app",
+  messagingSenderId: "475692348722",
+  appId: "1:475692348722:web:f03639854c7243e917932b"
+}, "portal-admin");
+const auth = getAuth(app), db = getFirestore(app), storage = getStorage(app);
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+const aviso = (alvo, texto, tipo = "erro") => { $(alvo).innerHTML = texto ? `<div class="msg ${tipo}">${esc(texto)}</div>` : ""; };
+function toast(t) { const d = document.createElement("div"); d.className = "toast"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 3200); }
+
+let eu = null;            // { uid, email, nome, papel: "dono" | "editor" }
+let noticias = [];
+
+/* Categorias do painel = editorias do portal */
+const CATEGORIAS = Object.keys(CATEGORIA_PARA_EDITORIA).filter(c => c !== "Geral");
+$("#n-categoria").innerHTML = CATEGORIAS.map(c => `<option>${c}</option>`).join("");
+const corDe = c => (EDITORIAS[CATEGORIA_PARA_EDITORIA[c] || "antas"] || {}).cor || "#0a2545";
+
+/* ---------- Login ---------- */
+$("#form-login").onsubmit = async e => {
+  e.preventDefault();
+  aviso("#login-msg", "");
+  $("#btn-entrar").disabled = true;
+  try { await signInWithEmailAndPassword(auth, $("#l-email").value.trim(), $("#l-senha").value); }
+  catch (err) { aviso("#login-msg", /invalid|wrong|user-not-found/.test(err.code) ? "E-mail ou senha incorretos." : "Não foi possível entrar. Tente de novo."); }
+  $("#btn-entrar").disabled = false;
+};
+$("#btn-esqueci").onclick = async () => {
+  const email = $("#l-email").value.trim();
+  if (!email) return aviso("#login-msg", "Digite seu e-mail acima e toque em “Esqueci minha senha”.");
+  try { await sendPasswordResetEmail(auth, email); aviso("#login-msg", "Enviamos um link para criar uma nova senha no seu e-mail.", "ok"); }
+  catch { aviso("#login-msg", "Não foi possível enviar o e-mail. Confira o endereço."); }
+};
+$("#btn-sair").onclick = () => signOut(auth);
+
+onAuthStateChanged(auth, async user => {
+  if (!user) { eu = null; $("#tela-painel").classList.add("esc"); $("#tela-login").classList.remove("esc"); return; }
+  try {
+    const [adm, ed] = await Promise.all([
+      getDoc(doc(db, "admins", user.uid)).catch(() => null),
+      getDoc(doc(db, "editores_portal", user.uid)).catch(() => null)
+    ]);
+    let papel = null, nome = user.displayName || "";
+    if (adm?.exists()) papel = "dono";
+    else if (ed?.exists() && ed.data().ativo !== false) { papel = "editor"; nome = ed.data().nome || nome; }
+    if (!papel) { await signOut(auth); return aviso("#login-msg", "Esta conta não tem acesso ao painel do portal. Peça a liberação ao administrador."); }
+    eu = { uid: user.uid, email: user.email, nome: nome || user.email.split("@")[0], papel };
+    $("#quem-nome").textContent = eu.nome;
+    $("#quem-papel").textContent = papel === "dono" ? "Administrador" : "Editor";
+    $("#aba-equipe").classList.toggle("esc", papel !== "dono");
+    $("#tela-login").classList.add("esc"); $("#tela-painel").classList.remove("esc");
+    abrirAba("lista");
+  } catch (err) { console.error(err); aviso("#login-msg", "Erro ao verificar o acesso."); }
+});
+
+/* ---------- Abas ---------- */
+function abrirAba(aba) {
+  document.querySelectorAll("nav.abas button").forEach(b => b.classList.toggle("ativo", b.dataset.aba === aba));
+  $("#aba-lista").classList.toggle("esc", aba !== "lista");
+  $("#aba-editor").classList.toggle("esc", aba !== "editor");
+  $("#aba-equipe-sec").classList.toggle("esc", aba !== "equipe");
+  if (aba === "lista") carregarLista();
+  if (aba === "editor" && !$("#n-id").value) limparEditor();
+  if (aba === "equipe") carregarEquipe();
+  scrollTo({ top: 0 });
+}
+document.querySelectorAll("nav.abas button").forEach(b => b.onclick = () => { if (b.dataset.aba === "editor") $("#n-id").value = ""; abrirAba(b.dataset.aba); });
+
+/* ---------- Lista de notícias ---------- */
+async function carregarLista() {
+  try {
+    const snap = await getDocs(query(collection(db, "noticias"), orderBy("criadoEm", "desc"), limit(200)));
+    noticias = snap.docs.filter(d => !d.data().teste).map(d => ({ id: d.id, ...d.data() }));
+    desenharLista();
+  } catch (err) { console.error(err); $("#lista").innerHTML = `<div class="vazio">Não foi possível carregar as notícias.</div>`; }
+}
+function desenharLista() {
+  const t = $("#busca").value.trim().toLowerCase();
+  const lista = noticias.filter(n => !t || (n.titulo || "").toLowerCase().includes(t));
+  $("#total").textContent = `(${noticias.length})`;
+  $("#lista").innerHTML = lista.length ? lista.map(n => {
+    const data = n.criadoEm?.toDate ? n.criadoEm.toDate().toLocaleDateString("pt-BR") : "";
+    const foto = n.imagemUrl ? `<img src="${esc(n.imagemUrl.startsWith("/portal/") ? n.imagemUrl.replace("/portal/", "") : n.imagemUrl)}" alt="" loading="lazy">` : `<div class="semfoto"></div>`;
+    return `<div class="item">${foto}<div>
+      <span class="cat" style="color:${corDe(n.categoria)}">${esc(n.categoria || "Geral")}</span>
+      <h3>${esc(n.titulo)}</h3>
+      <div class="meta">${data}${n.autor ? " · " + esc(n.autor) : ""}</div>
+      <div class="acoes"><button class="link-btn" data-editar="${n.id}">Editar</button><a href="noticia.html?id=${n.id}" target="_blank">Ver ↗</a></div>
+    </div></div>`;
+  }).join("") : `<div class="vazio">${t ? "Nenhuma notícia com esse título." : "Nenhuma notícia publicada ainda."}</div>`;
+  document.querySelectorAll("[data-editar]").forEach(b => b.onclick = () => editar(b.dataset.editar));
+}
+$("#busca").oninput = desenharLista;
+
+/* ---------- Editor ---------- */
+let fotoArquivo = null;
+function limparEditor() {
+  $("#form-noticia").reset(); $("#n-id").value = ""; fotoArquivo = null;
+  $("#n-autor").value = eu?.papel === "editor" ? eu.nome : "";
+  $("#n-categoria").value = "Cidade";
+  $("#foto-prev").classList.add("esc"); $("#foto-txt").textContent = "📷 Toque para escolher uma foto";
+  $("#editor-titulo").textContent = "Nova notícia"; $("#btn-publicar").textContent = "Publicar";
+  $("#btn-excluir").classList.add("esc"); aviso("#editor-msg", "");
+}
+function editar(id) {
+  const n = noticias.find(x => x.id === id); if (!n) return;
+  limparEditor();
+  $("#n-id").value = id; $("#n-titulo").value = n.titulo || ""; $("#n-texto").value = n.texto || "";
+  $("#n-categoria").value = CATEGORIAS.includes(n.categoria) ? n.categoria : "Cidade";
+  $("#n-autor").value = n.autor || ""; $("#n-link").value = n.link || "";
+  if (n.imagemUrl) { $("#n-foto-url").value = n.imagemUrl; mostrarFoto(n.imagemUrl.startsWith("/portal/") ? n.imagemUrl.replace("/portal/", "") : n.imagemUrl); }
+  $("#editor-titulo").textContent = "Editar notícia"; $("#btn-publicar").textContent = "Salvar alterações";
+  $("#btn-excluir").classList.remove("esc");
+  abrirAba("editor");
+}
+function mostrarFoto(src) { $("#foto-prev").src = src; $("#foto-prev").classList.remove("esc"); $("#foto-txt").textContent = "Toque para trocar a foto"; }
+$("#foto-area").onclick = () => $("#n-foto").click();
+$("#n-foto").onchange = () => { const f = $("#n-foto").files[0]; if (!f) return; fotoArquivo = f; $("#n-foto-url").value = ""; mostrarFoto(URL.createObjectURL(f)); };
+$("#n-foto-url").oninput = () => { const u = $("#n-foto-url").value.trim(); if (/^https?:\/\//.test(u)) { fotoArquivo = null; mostrarFoto(u); } };
+$("#btn-cancelar").onclick = () => { $("#n-id").value = ""; abrirAba("lista"); };
+
+/* Reduz a foto (máx. 1280 px, JPEG) antes de enviar */
+function reduzir(arquivo) {
+  return new Promise((ok, falha) => {
+    const img = new Image();
+    img.onload = () => {
+      const max = 1280, r = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement("canvas"); c.width = Math.round(img.width * r); c.height = Math.round(img.height * r);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      c.toBlob(b => b ? ok(b) : falha(new Error("foto")), "image/jpeg", 0.82);
+    };
+    img.onerror = falha; img.src = URL.createObjectURL(arquivo);
+  });
+}
+
+$("#form-noticia").onsubmit = async e => {
+  e.preventDefault();
+  aviso("#editor-msg", "");
+  const titulo = $("#n-titulo").value.trim(), texto = $("#n-texto").value.trim();
+  if (!titulo || !texto) return aviso("#editor-msg", "Preencha o título e o texto.");
+  const btn = $("#btn-publicar"); btn.disabled = true; const rotulo = btn.textContent; btn.textContent = "Salvando…";
+  try {
+    let imagemUrl = $("#n-foto-url").value.trim();
+    if (fotoArquivo) {
+      try {
+        const blob = await reduzir(fotoArquivo);
+        const r = ref(storage, `noticias/${Date.now()}_${eu.uid.slice(0, 6)}.jpg`);
+        await uploadBytes(r, blob, { contentType: "image/jpeg" });
+        imagemUrl = await getDownloadURL(r);
+      } catch (err) {
+        console.error(err);
+        btn.disabled = false; btn.textContent = rotulo;
+        return aviso("#editor-msg", "A foto não pôde ser enviada (o Firebase ainda não liberou o envio de fotos de notícias). Cole o link de uma imagem ou publique sem foto.");
+      }
+    }
+    const dados = { titulo, texto, categoria: $("#n-categoria").value, autor: $("#n-autor").value.trim(),
+      link: $("#n-link").value.trim(), imagemUrl, atualizadoEm: serverTimestamp(), editadoPor: eu.uid };
+    const id = $("#n-id").value;
+    if (id) await updateDoc(doc(db, "noticias", id), dados);
+    else await addDoc(collection(db, "noticias"), { ...dados, criadoEm: serverTimestamp(), criadoPor: eu.uid });
+    toast(id ? "Notícia atualizada ✔" : "Notícia publicada ✔");
+    $("#n-id").value = ""; abrirAba("lista");
+  } catch (err) {
+    console.error(err);
+    aviso("#editor-msg", err.code === "permission-denied" ? "Sua conta ainda não tem permissão para publicar. Fale com o administrador." : "Não foi possível salvar. Tente de novo.");
+  }
+  btn.disabled = false; btn.textContent = rotulo;
+};
+
+$("#btn-excluir").onclick = async () => {
+  const id = $("#n-id").value; if (!id) return;
+  const b = $("#btn-excluir");
+  if (b.dataset.confirma !== "1") { b.dataset.confirma = "1"; b.textContent = "Toque de novo para excluir"; setTimeout(() => { b.dataset.confirma = ""; b.textContent = "Excluir"; }, 4000); return; }
+  try { await deleteDoc(doc(db, "noticias", id)); toast("Notícia excluída"); $("#n-id").value = ""; abrirAba("lista"); }
+  catch (err) { console.error(err); aviso("#editor-msg", "Não foi possível excluir."); }
+};
+
+/* ---------- Equipe (só o dono) ---------- */
+async function carregarEquipe() {
+  try {
+    const snap = await getDocs(collection(db, "editores_portal"));
+    const pessoas = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(p => p.ativo !== false);
+    const dono = `<div class="pessoa"><div class="av">${esc(eu.nome[0].toUpperCase())}</div><div class="nm"><b>${esc(eu.nome)}</b><span>${esc(eu.email)}</span></div><span class="selo">Administrador</span></div>`;
+    $("#equipe-lista").innerHTML = dono + pessoas.map(p => `<div class="pessoa"><div class="av">${esc((p.nome || p.email || "?")[0].toUpperCase())}</div>
+      <div class="nm"><b>${esc(p.nome || "Editor")}</b><span>${esc(p.email || "")}</span></div>
+      <button class="btn perigo" style="padding:8px 12px" data-remover="${p.id}">Remover</button></div>`).join("");
+    document.querySelectorAll("[data-remover]").forEach(b => b.onclick = async () => {
+      if (b.dataset.confirma !== "1") { b.dataset.confirma = "1"; b.textContent = "Confirmar"; return; }
+      await deleteDoc(doc(db, "editores_portal", b.dataset.remover)); toast("Editor removido"); carregarEquipe();
+    });
+  } catch (err) { console.error(err); $("#equipe-lista").innerHTML = `<div class="vazio">Não foi possível carregar a equipe.</div>`; }
+}
+$("#form-equipe").onsubmit = async e => {
+  e.preventDefault(); aviso("#equipe-msg", "");
+  const email = $("#e-email").value.trim().toLowerCase();
+  try {
+    let snap = await getDocs(query(collection(db, "usuarios"), where("email", "==", email), limit(1)));
+    if (snap.empty) snap = await getDocs(query(collection(db, "usuarios"), where("email", "==", $("#e-email").value.trim()), limit(1)));
+    if (snap.empty) return aviso("#equipe-msg", "Não achei uma conta com esse e-mail no Achei Fácil. Peça para a pessoa criar a conta no site primeiro.");
+    const u = snap.docs[0], d = u.data();
+    await setDoc(doc(db, "editores_portal", u.id), { nome: d.nome || d.name || d.displayName || email.split("@")[0], email, ativo: true, criadoEm: serverTimestamp(), criadoPor: eu.uid });
+    $("#e-email").value = ""; aviso("#equipe-msg", "Pronto! Agora essa pessoa pode entrar no painel do portal com o e-mail e a senha dela.", "ok");
+    carregarEquipe();
+  } catch (err) { console.error(err); aviso("#equipe-msg", err.code === "permission-denied" ? "O Firebase ainda não permite cadastrar editores. Veja as regras no arquivo de instruções." : "Não foi possível adicionar."); }
+};
+</script>
+</body>
+</html>
